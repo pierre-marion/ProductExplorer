@@ -148,6 +148,25 @@ fun sampleProductOutOfStock(): ProductUi {
     )
 }
 
+fun sampleCategories(): List<String> {
+    return listOf("Smartphones", "Audio", "Wearables", "Maison")
+}
+
+@Composable
+fun CategoryRow(
+    categories: List<String>,
+    modifier: Modifier = Modifier
+) {
+    LazyRow(
+        modifier = modifier,
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        items(categories) { category ->
+            CategoryChip(label = category)
+        }
+    }
+}
+
 @Composable
 fun ProductCatalogScreen(
     products: List<ProductUi>,
@@ -164,6 +183,15 @@ fun ProductCatalogScreen(
                 text = "Catalogue produits",
                 style = MaterialTheme.typography.headlineMedium
             )
+        }
+        item {
+            Text(
+                text = "Explorez une sélection de produits disponibles localement.",
+                style = MaterialTheme.typography.bodyMedium
+            )
+        }
+        item {
+            CategoryRow(categories = sampleCategories())
         }
         items(
             items = products,
@@ -210,6 +238,7 @@ fun ProductListItem(
     }
 }
 
+
 @Composable
 fun ProductHomeScreen(
     featuredProduct: ProductUi,
@@ -235,6 +264,7 @@ fun ProductHomeScreen(
         DailyOfferBox()
     }
 }
+
 
 @Composable
 fun HomeHeader(
@@ -411,6 +441,7 @@ fun DailyOfferBox(
         }
     }
 }
+
 
 /* ############### TP4 ################ */
 
@@ -660,3 +691,13 @@ fun ProductHomeScreenPreview() {
     }
 }
 
+@Preview(showBackground = true)
+@Composable
+fun ProductCatalogScreenPreview() {
+    ProductExplorerTheme {
+        ProductCatalogScreen(
+            products = sampleProducts(),
+            onProductClick = {}
+        )
+    }
+}
