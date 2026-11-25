@@ -43,9 +43,9 @@ class MainActivity : ComponentActivity() {
         setContent {
             ProductExplorerTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    ProductHomeScreen(
-                        featuredProduct = sampleProduct(),
-                        onFeaturedProductClick = {
+                    ProductCatalogScreen(
+                        products = sampleProducts(),
+                        onProductClick = {
                             // Plus tard : ouvrir le détail du produit
                         },
                         modifier = Modifier.padding(innerPadding)
@@ -69,6 +69,51 @@ data class ProductUi(
     val warrantyInformation: String,
     val shippingInformation: String
 )
+
+fun sampleProducts(): List<ProductUi> {
+    return listOf(
+        sampleProduct(),
+        ProductUi(
+            id = 2,
+            title = "Casque Audio Pulse",
+            brand = "SoundPeak",
+            category = "Audio",
+            description = "Un casque confortable pour écouter de la musique et travailler dans de bonnes conditions.",
+            price = 129.99,
+            discountPercentage = 8.0,
+            rating = 4.2,
+            stock = 0,
+            warrantyInformation = "Garantie constructeur : 1 an",
+            shippingInformation = "Produit temporairement indisponible"
+        ),
+        ProductUi(
+            id = 3,
+            title = "Montre Connectée FitTime",
+            brand = "FitTime",
+            category = "Wearables",
+            description = "Une montre connectée simple pour suivre l’activité quotidienne.",
+            price = 89.99,
+            discountPercentage = 15.0,
+            rating = 4.4,
+            stock = 18,
+            warrantyInformation = "Garantie constructeur : 2 ans",
+            shippingInformation = "Livraison estimée : 2 à 4 jours ouvrés"
+        ),
+        ProductUi(
+            id = 4,
+            title = "Enceinte Mini Boom",
+            brand = "BoomSound",
+            category = "Audio",
+            description = "Une enceinte compacte pour écouter de la musique à la maison ou en déplacement.",
+            price = 59.99,
+            discountPercentage = 5.0,
+            rating = 4.1,
+            stock = 52,
+            warrantyInformation = "Garantie constructeur : 1 an",
+            shippingInformation = "Livraison estimée : 3 jours ouvrés"
+        )
+    )
+}
 
 fun sampleProduct(): ProductUi {
     return ProductUi(
@@ -101,6 +146,68 @@ fun sampleProductOutOfStock(): ProductUi {
         warrantyInformation = "Garantie constructeur : 1 an",
         shippingInformation = "Produit temporairement indisponible"
     )
+}
+
+@Composable
+fun ProductCatalogScreen(
+    products: List<ProductUi>,
+    onProductClick: (ProductUi) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    LazyColumn(
+        modifier = modifier.fillMaxSize(),
+        contentPadding = PaddingValues(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+    ) {
+        item {
+            Text(
+                text = "Catalogue produits",
+                style = MaterialTheme.typography.headlineMedium
+            )
+        }
+        items(
+            items = products,
+            key = { product -> product.id }
+        ) { product ->
+            ProductListItem(
+                product = product,
+                onClick = {
+                    onProductClick(product)
+                }
+            )
+        }
+    }
+}
+
+@Composable
+fun ProductListItem(
+    product: ProductUi,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Card(modifier = modifier.fillMaxWidth()) {
+        Column(
+            modifier = Modifier.padding(16.dp)
+        ) {
+            Text(
+                text = product.title,
+                style = MaterialTheme.typography.titleMedium
+            )
+            Text(
+                text = product.brand,
+                style = MaterialTheme.typography.bodyMedium
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = "${product.price} € • ★ ${product.rating}",
+                style = MaterialTheme.typography.bodyMedium
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Button(onClick = onClick) {
+                Text(text = "Voir le produit")
+            }
+        }
+    }
 }
 
 @Composable
