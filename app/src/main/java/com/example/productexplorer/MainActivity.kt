@@ -117,6 +117,7 @@ fun sampleProducts(): List<ProductUi> {
     )
 }
 
+
 fun sampleProduct(): ProductUi {
     return ProductUi(
         id = 1,
@@ -717,3 +718,30 @@ fun ProductCatalogScreenPreview() {
     }
 }
 
+@Preview(
+    showBackground = true,
+    name = "Catalogue - Dark Theme"
+)
+@Composable
+fun ProductCatalogScreenDarkPreview() {
+    ProductExplorerTheme(darkTheme = true) {
+        ProductCatalogScreen(
+            products = sampleProducts(),
+            onProductClick = {}
+        )
+    }
+}
+
+@Preview(
+    showBackground = true,
+    name = "Catalogue - Light Theme"
+)
+@Composable
+fun ProductCatalogScreenLightPreview() {
+    ProductExplorerTheme(darkTheme = false) {
+        ProductCatalogScreen(
+            products = sampleProducts(),
+            onProductClick = {}
+        )
+    }
+}
