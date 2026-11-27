@@ -50,14 +50,16 @@ class MainActivity : ComponentActivity() {
         setContent {
             ProductExplorerTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    ProductCatalogScreen(
+                    ProductCatalogContainer(
                         products = sampleProducts(),
+                        categories = sampleCategories(),
                         onProductClick = {
                             // Plus tard : ouvrir le détail du produit
                         },
                         modifier = Modifier.padding(innerPadding)
                     )
                 }
+
             }
         }
     }
@@ -175,16 +177,22 @@ fun CategoryRow(
 }
 
 @Composable
-fun ProductCatalogScreen(
+fun ProductCatalogContainer(
     products: List<ProductUi>,
+    categories: List<String>,
     onProductClick: (ProductUi) -> Unit,
     modifier: Modifier = Modifier
 ) {
     var searchQuery by rememberSaveable {
         mutableStateOf("")
     }
+
     var showOnlyInStock by rememberSaveable {
         mutableStateOf(false)
+    }
+
+    var favoriteProductIds by rememberSaveable {
+        mutableStateOf(listOf<Int>())
     }
 
     val filteredProducts = remember(products, searchQuery, showOnlyInStock) {
@@ -201,6 +209,48 @@ fun ProductCatalogScreen(
         }
     }
 
+    fun toggleFavorite(productId: Int) {
+        favoriteProductIds = if (favoriteProductIds.contains(productId)) {
+            favoriteProductIds - productId
+        } else {
+            favoriteProductIds + productId
+        }
+    }
+
+    ProductCatalogScreen(
+        products = filteredProducts,
+        categories = categories,
+        searchQuery = searchQuery,
+        onSearchQueryChange = { newValue ->
+            searchQuery = newValue
+        },
+        showOnlyInStock = showOnlyInStock,
+        onToggleStockFilter = {
+            showOnlyInStock = !showOnlyInStock
+        },
+        favoriteProductIds = favoriteProductIds,
+        onFavoriteClick = { productId ->
+            toggleFavorite(productId)
+        },
+        onProductClick = onProductClick,
+        modifier = modifier
+    )
+
+}
+
+@Composable
+fun ProductCatalogScreen(
+    products: List<ProductUi>,
+    categories: List<String>,
+    searchQuery: String,
+    onSearchQueryChange: (String) -> Unit,
+    showOnlyInStock: Boolean,
+    onToggleStockFilter: () -> Unit,
+    favoriteProductIds: List<Int>,
+    onFavoriteClick: (Int) -> Unit,
+    onProductClick: (ProductUi) -> Unit,
+    modifier: Modifier = Modifier
+) {
     LazyColumn(
         modifier = modifier
             .fillMaxSize()
@@ -215,23 +265,21 @@ fun ProductCatalogScreen(
                 color = MaterialTheme.colorScheme.primary
             )
         }
+
         item {
             OutlinedTextField(
                 value = searchQuery,
-                onValueChange = { newValue ->
-                    searchQuery = newValue
-                },
+                onValueChange = onSearchQueryChange,
                 label = {
                     Text(text = "Rechercher un produit")
                 },
                 modifier = Modifier.fillMaxWidth()
             )
         }
+
         item {
             Button(
-                onClick = {
-                    showOnlyInStock = !showOnlyInStock
-                }
+                onClick = onToggleStockFilter
             ) {
                 Text(
                     text = if (showOnlyInStock) {
@@ -245,21 +293,25 @@ fun ProductCatalogScreen(
 
         item {
             Text(
-                text = "Explorez une sélection de produits disponibles localement.",
+                text = "${products.size} produit(s) affiché(s)",
                 style = MaterialTheme.typography.bodyMedium
             )
         }
 
         item {
-            CategoryRow(categories = sampleCategories())
+            CategoryRow(categories = categories)
         }
 
         items(
-            items = filteredProducts,
+            items = products,
             key = { product -> product.id }
         ) { product ->
             ProductListItem(
                 product = product,
+                isFavorite = favoriteProductIds.contains(product.id),
+                onFavoriteClick = {
+                    onFavoriteClick(product.id)
+                },
                 onClick = {
                     onProductClick(product)
                 }
@@ -271,6 +323,8 @@ fun ProductCatalogScreen(
 @Composable
 fun ProductListItem(
     product: ProductUi,
+    isFavorite: Boolean,
+    onFavoriteClick: () -> Unit,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -304,6 +358,16 @@ fun ProductListItem(
                 color = MaterialTheme.colorScheme.primary
             )
             Spacer(modifier = Modifier.height(8.dp))
+            Button(onClick = onFavoriteClick) {
+                Text(
+                    text = if (isFavorite) {
+                        "Retirer des favoris"
+                    } else {
+                        "Ajouter aux favoris"
+                    }
+                )
+            }
+
             Button(onClick = onClick) {
                 Text(text = "Voir le produit")
             }
@@ -513,8 +577,6 @@ fun DailyOfferBox(
         }
     }
 }
-
-/* ############### TP4 ################ */
 
 @Composable
 fun ProductDetailScreen(
@@ -762,12 +824,16 @@ fun ProductHomeScreenPreview() {
     }
 }
 
-@Preview(showBackground = true)
+@Preview(
+    showBackground = true,
+    name = "Catalogue - Light Theme"
+)
 @Composable
-fun ProductCatalogScreenPreview() {
-    ProductExplorerTheme {
-        ProductCatalogScreen(
+fun ProductCatalogContainerLightPreview() {
+    ProductExplorerTheme(darkTheme = false) {
+        ProductCatalogContainer(
             products = sampleProducts(),
+            categories = sampleCategories(),
             onProductClick = {}
         )
     }
@@ -778,24 +844,41 @@ fun ProductCatalogScreenPreview() {
     name = "Catalogue - Dark Theme"
 )
 @Composable
-fun ProductCatalogScreenDarkPreview() {
+fun ProductCatalogContainerDarkPreview() {
     ProductExplorerTheme(darkTheme = true) {
-        ProductCatalogScreen(
+        ProductCatalogContainer(
             products = sampleProducts(),
+            categories = sampleCategories(),
             onProductClick = {}
         )
     }
 }
 
-@Preview(
-    showBackground = true,
-    name = "Catalogue - Light Theme"
-)
+//@Preview(showBackground = true)
+//@Composable
+//fun ProductCatalogContainerPreview() {
+//    ProductExplorerTheme {
+//        ProductCatalogContainer(
+//            products = sampleProducts(),
+//            categories = sampleCategories(),
+//            onProductClick = {}
+//        )
+//    }
+//}
+
+@Preview(showBackground = true)
 @Composable
-fun ProductCatalogScreenLightPreview() {
-    ProductExplorerTheme(darkTheme = false) {
+fun ProductCatalogScreenStatelessPreview() {
+    ProductExplorerTheme {
         ProductCatalogScreen(
             products = sampleProducts(),
+            categories = sampleCategories(),
+            searchQuery = "",
+            onSearchQueryChange = {},
+            showOnlyInStock = false,
+            onToggleStockFilter = {},
+            favoriteProductIds = listOf(1),
+            onFavoriteClick = {},
             onProductClick = {}
         )
     }
